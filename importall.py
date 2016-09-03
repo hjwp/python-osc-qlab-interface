@@ -30,7 +30,7 @@ from bs4 import BeautifulSoup
 
 def load_titles(act_number):
     # all_titles = list(filter(bool, [quote.strip() for quote in open('act2.md.titles-only').read().replace('> ', '').split('\n\n')]))
-    raw = open('act{}.md'.format(act_number)).read()
+    raw = open('captions/act{}.md'.format(act_number)).read()
     html = markdown.markdown(raw)
     soup = BeautifulSoup(html)
     quotes = soup.find_all('blockquote')
