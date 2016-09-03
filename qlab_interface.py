@@ -44,19 +44,20 @@ class Client:
 
 
 
-# @asyncio.coroutine
+class Interface:
+    def __init__(self):
+        self.server = Listener()
+        self.client = Client()
+
+
+
 def main():
-    server = Listener()
-    client = Client()
-    client.get_cue_text(10102)
-    # message = yield from server.get_message()
-    message = server.get_message()
+    interface = Interface()
+    interface.client.get_cue_text(10102)
+    message = interface.server.get_message()
     print(message)
 
-# loop = asyncio.get_event_loop()
-# loop.create_task(main())
-# loop.run_forever()
-# loop.close()
 
-main()
+if __name__ == '__main__':
+    main()
 
