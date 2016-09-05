@@ -21,7 +21,11 @@ class Listener:
         raw = data.decode('utf8')
         parts = raw.split('\x00')
         json_message = parts[5]
-        self.last_message = json.loads(json_message)
+        try:
+            self.last_message = json.loads(json_message)
+        except json.decoder.JSONDecodeError as e:
+            print('Error. server response:', repr(json_message))
+            self.last_message = None
 
     def get_message(self):
         t = threading.Thread(target=self._get_message, daemon=True)
@@ -37,10 +41,16 @@ class Client:
     def __init__(self):
         self.client = udp_client.UDPClient('localhost', 53000)
 
+
+    def send_message(self, address):
+        print('sending message to', address)
+        msg = osc_message_builder.OscMessageBuilder(address=address)
+        self.client.send(msg.build())
+
+
     def get_cue_text(self, cue_no):
         print('getting cue text', cue_no)
-        msg = osc_message_builder.OscMessageBuilder(address='/cue/{}/text'.format(cue_no))
-        self.client.send(msg.build())
+        self.send_message(address='/cue/{}/text'.format(cue_no))
 
 
 
@@ -49,13 +59,24 @@ class Interface:
         self.server = Listener()
         self.client = Client()
 
+    def get_cue_text(self, cue_no):
+        self.client.get_cue_text(10102)
+        return self.server.get_message()
+
+
+    def get_cue_property(self, cue_no, name):
+        print('getting cue {} property {}'.format(cue_no, name))
+        self.client.send_message('/cue/{cue_no}/{name}'.format(**locals()))
+        return self.server.get_message()
+
 
 
 def main():
     interface = Interface()
-    interface.client.get_cue_text(10102)
-    message = interface.server.get_message()
-    print(message)
+    cue_text = interface.get_cue_text(10102)
+    print(cue_text)
+    cue_surface = interface.get_cue_property(10102, 'surfaceID')
+    print(cue_surface)
 
 
 if __name__ == '__main__':
