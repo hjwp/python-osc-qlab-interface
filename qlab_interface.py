@@ -31,7 +31,7 @@ class Listener:
     def get_message(self):
         t = threading.Thread(target=self._get_message, daemon=True)
         t.start()
-        t.join(timeout=1)
+        t.join(timeout=0.2)
         return self.last_message
         
 
@@ -66,7 +66,6 @@ class Interface:
 
 
     def get_cue_property(self, cue_no, name):
-        print('getting cue {} property {}'.format(cue_no, name))
         self.client.send_message('/cue/{cue_no}/{name}'.format(**locals()))
         response = self.server.get_message()
         if response:
@@ -74,7 +73,6 @@ class Interface:
 
 
     def set_cue_property(self, cue_no, name, value):
-        print('setting cue {} property {} to {}'.format(cue_no, name, value))
         self.client.send_message('/cue/{cue_no}/{name}'.format(**locals()), value=value)
 
 
@@ -96,28 +94,57 @@ def _fix_simple_cue_numbers():
         interface.client.send_message('/select/next')
 
 
+def process_group(interface, group_cue_no, prefix):
+    group_cues = interface.get_cue_property(group_cue_no, 'children')
+    subgroup_no = 0
+    item_no = 0
+    for cue_info in group_cues:
+        cue_no = cue_info.get('number')
+        item_no += 1
+        new_no = '{}.{}'.format(prefix, item_no)
+        cue_name = interface.get_cue_property(cue_no, 'name')
+        cue_type = interface.get_cue_property(cue_no, 'type')
+
+        if cue_type == 'Group':
+            process_group(interface, cue_no, new_no)
+
+        elif cue_type == 'Fade':
+            target = interface.get_cue_property(cue_no, 'cueTargetNumber')
+            new_no = '{}.off'.format(target)
+
+        if cue_name:
+            print(cue_no, new_no, cue_name)
+        else:
+            text = interface.get_cue_property(cue_no, 'text')
+            print(cue_no, new_no, repr(text))
+        interface.client.send_message('/select/{}'.format(cue_no))
+
+
+
+
 def main():
     interface = Interface()
-    interface.client.send_message('/select/3.1.1')
-    group_no = 0
+    interface.client.send_message('/select/3.5.58')
+    current_group_cue_no = None
+    item_no = 0
+
     for _ in range(20):
+        item_no += 1
         cue_no = interface.get_cue_property('selected', 'number')
-        act, scene, number = cue_no.split('.', 3)
+        act, scene, _ = cue_no.split('.', 3)
         cue_name = interface.get_cue_property('selected', 'name')
         cue_type = interface.get_cue_property('selected', 'type')
-        if cue_type == 'Group':
-            if 'Group' in cue_name:
-                group_no += 1
-                subgroup_no = 0
-                item_no = 0
-                new_no = '{act}.{scene}.{group_no}'.format(**locals())
-            else:
-                subgroup_no += 1
-                new_no = '{act}.{scene}.{group_no}.{subgroup_no}'.format(**locals())
+        new_no  = '{act}.{scene}.{item_no}'.format(**locals())
+
+        if cue_name:
+            print(cue_no, new_no, cue_name)
         else:
-            item_no += 1
-            new_no = '{group_name}.{item_no}'.format(group_name=new_no, item_no=item_no)
-        print(cue_no, new_no)
+            text = interface.get_cue_property('selected', 'text')
+            print(cue_no, new_no, repr(text))
+
+        if cue_type == 'Group':
+            process_group(interface, cue_no, new_no)
+
         interface.client.send_message('/select/next')
 
 
