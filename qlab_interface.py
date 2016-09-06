@@ -52,10 +52,6 @@ class Client:
         self.client.send(msg.build())
 
 
-    def get_cue_text(self, cue_no):
-        self.send_message(address='/cue/{}/text'.format(cue_no))
-
-    
 
 class Interface:
     def __init__(self):
@@ -63,8 +59,7 @@ class Interface:
         self.client = Client()
 
     def get_cue_text(self, cue_no):
-        self.client.get_cue_text(10102)
-        return self.server.get_message()
+        return self.get_cue_property(cue_no, 'text')
 
 
     def get_cue_property(self, cue_no, name):
@@ -164,7 +159,15 @@ def _recursive_group_numbers(interface):
 def main():
     interface = Interface()
     # _fix_simple_cue_numbers(interface)
-    _recursive_group_numbers(interface)
+    # _recursive_group_numbers(interface)
+    interface.client.send_message('/select/1.1.1')
+    while True:
+        caption_type = interface.get_cue_property('selected', 'type')
+        if caption_type == 'Titles':
+            print(interface.get_cue_text('selected'))
+        if caption_type == 'Group':
+            print()
+        interface.client.send_message('/select/next')
 
 if __name__ == '__main__':
     main()
