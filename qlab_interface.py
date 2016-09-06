@@ -78,20 +78,19 @@ class Interface:
         self.client.send_message('/cue/{cue_no}/{name}'.format(**locals()), value=value)
 
 
-def _fix_simple_cue_numbers():
-    interface.client.send_message('/select/31003')
+def _fix_simple_cue_numbers(interface):
+    interface.client.send_message('/select/40818')
     while True:
         cue_no = interface.get_cue_property('selected', 'number')
         print(cue_no)
         if cue_no:
             act = int(cue_no[:1])
-            if act > 3:
+            if act > 4:
                 break
             scene = int(cue_no[1:3])
             number = int(cue_no[3:])
             new_no = '{}.{}.{}'.format(act, scene, number)
             interface.set_cue_property('selected', 'number', new_no)
-            
 
         interface.client.send_message('/select/next')
 
@@ -126,11 +125,9 @@ def process_group(interface, group_cue_no):
 
 
 
-def main():
-    interface = Interface()
-
+def _recursive_group_numbers(interface):
     start_act = 4
-    start_scene = 1
+    start_scene = 3
     interface.client.send_message('/select/{act}.{scene}.1'.format(act=start_act, scene=start_scene))
 
     current_group_cue_no = None
@@ -163,6 +160,11 @@ def main():
 
         interface.client.send_message('/select/next')
 
+
+def main():
+    interface = Interface()
+    # _fix_simple_cue_numbers(interface)
+    _recursive_group_numbers(interface)
 
 if __name__ == '__main__':
     main()
