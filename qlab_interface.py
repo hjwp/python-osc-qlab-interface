@@ -165,8 +165,7 @@ def main():
         caption_type = interface.get_cue_property('selected', 'type')
         if caption_type == 'Titles':
             print(interface.get_cue_text('selected'))
-        if caption_type == 'Group':
-            print()
+        print()
         interface.client.send_message('/select/next')
 
 if __name__ == '__main__':
