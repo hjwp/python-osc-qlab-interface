@@ -77,14 +77,12 @@ class Interface:
 def main():
     interface = Interface()
     interface.client.send_message('/select/0')
-    done = []
     while True:
         caption_type = interface.get_cue_property('selected', 'type')
         if caption_type == 'Titles':
             text = interface.get_cue_text('selected')
-            done.append(text)
             print(text)
-            if done[-3:].count(text) == 3:
+            if text.lower().strip() == 'the end':
                 break
         print()
         interface.client.send_message('/select/next')
