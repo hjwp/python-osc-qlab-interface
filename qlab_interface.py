@@ -33,7 +33,7 @@ class Listener:
     def get_message(self):
         t = threading.Thread(target=self._get_message, daemon=True)
         t.start()
-        t.join(timeout=0.2)
+        t.join(timeout=0.3)
         return self.last_message
         
 
@@ -76,7 +76,7 @@ class Interface:
 
 def main():
     interface = Interface()
-    interface.client.send_message('/select/1.1.1')
+    interface.client.send_message('/select/0')
     done = []
     while True:
         caption_type = interface.get_cue_property('selected', 'type')

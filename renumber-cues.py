@@ -62,7 +62,7 @@ def recursive_group_numbers(interface):
 if __name__ == '__main__':
     interface = Interface()
     start_act = 4
-    start_scene = 3
+    start_scene = 12
     interface.client.send_message('/select/{act}.{scene}.1'.format(act=start_act, scene=start_scene))
     recursive_group_numbers(interface)
 
