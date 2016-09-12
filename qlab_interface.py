@@ -85,17 +85,21 @@ class Interface:
 
 
 def main():
+    # example script using the interface to 
+    # run through cues one by one and print
+    # any titles' cue numbers and text
     interface = Interface()
     interface.client.send_message('/select/0')
     while True:
         caption_type = interface.get_cue_property('selected', 'type')
         if caption_type == 'Titles':
             text = interface.get_cue_text('selected')
-            print(text)
+            cue_no = interface.get_cue_property('selected', 'number')
+            print(cue_no, text)
             if text.lower().strip() == 'the end':
                 break
         print()
-        interface.client.send_message('/select/next')
+        interface.select_next_cue()
 
 
 if __name__ == '__main__':
