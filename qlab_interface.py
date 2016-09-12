@@ -73,6 +73,16 @@ class Interface:
         self.client.send_message('/cue/{cue_no}/{name}'.format(**locals()), value=value)
 
 
+    def select_next_cue(self):
+        old = self.get_cue_property('selected', 'number')
+        self.client.send_message('/select/next')
+        cue_no = self.get_cue_property('selected', 'number')
+        while  cue_no == old:
+            cue_no = self.get_cue_property('selected', 'number')
+        return cue_no
+
+
+
 
 def main():
     interface = Interface()
